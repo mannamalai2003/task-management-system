@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        /* CSS Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Task Form Styles */
+        .task-form-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .task-form-container h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .priority-high { border-left: 4px solid #e74c3c; }
+        .priority-medium { border-left: 4px solid #f39c12; }
+        .priority-low { border-left: 4px solid #2ecc71; }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Task List Styles */
+        .task-list-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            min-height: 500px;
+        }
+
+        .task-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .task-list-header h2 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .task-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Filter Buttons */
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e1e1e1;
+            background: white;
+            color: #666;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Task Item Styles */
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .task-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-item.completed {
+            opacity: 0.7;
+            background: #e8f5e8;
+        }
+
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .task-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .task-priority {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-high-badge {
+            background: #fee;
+            color: #e74c3c;
+        }
+
+        .priority-medium-badge {
+            background: #fef9e7;
+            color: #f39c12;
+        }
+
+        .priority-low-badge {
+            background: #eafaf1;
+            color: #2ecc71;
+        }
+
+        .task-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .task-status {
+            display: flex;
+            gap: 5px;
+        }
+
+        .status-btn {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fee;
+            color: #e74c3c;
+        }
+
+        .status-in-progress {
+            background: #fef9e7;
+            color: #f39c12;
+        }
+
+        .status-completed {
+            background: #eafaf1;
+            color: #2ecc71;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: auto;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .task-form-container,
+            .task-list-container {
+                padding: 20px;
+            }
+
+            .filter-buttons {
+                justify-content: center;
+            }
+
+            .task-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .task-actions {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .task-form-container,
+            .task-list-container {
+                padding: 15px;
+            }
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .task-item {
+            animation: slideIn 0.3s ease;
+        }
+
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus styles for keyboard navigation */
+        button:focus,
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Task Manager</h1>
+            <p>Organize your tasks efficiently and boost your productivity</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Task Creation Form -->
+            <section class="task-form-container">
+                <h2>Create New Task</h2>
+                <form id="taskForm" aria-label="Create new task form">
+                    <div class="form-group">
+                        <label for="taskTitle">Task Title *</label>
+                        <input 
+                            type="text" 
+                            id="taskTitle" 
+                            name="title" 
+                            required 
+                            placeholder="Enter task title"
+                            aria-describedby="taskTitleHelp"
+                        >
+                        <div id="taskTitleHelp" class="sr-only">Enter a descriptive title for your task</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskDescription">Description</label>
+                        <textarea 
+                            id="taskDescription" 
+                            name="description" 
+                            placeholder="Enter task description (optional)"
+                            aria-describedby="taskDescHelp"
+                        ></textarea>
+                        <div id="taskDescHelp" class="sr-only">Add additional details about your task</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskPriority">Priority</label>
+                        <select id="taskPriority" name="priority" aria-describedby="priorityHelp">
+                            <option value="low">Low Priority</option>
+                            <option value="medium" selected>Medium Priority</option>
+                            <option value="high">High Priority</option>
+                        </select>
+                        <div id="priorityHelp" class="sr-only">Select the priority level for this task</div>
+                    </div>
+
+                    <button type="submit" class="btn" aria-describedby="submitHelp">
+                        Create Task
+                    </button>
+                    <div id="submitHelp" class="sr-only">Click to create a new task with the provided information</div>
+                </form>
+            </section>
+
+            <!-- Task List -->
+            <section class="task-list-container">
+                <div class="task-list-header">
+                    <h2>Your Tasks</h2>
+                    <span class="task-count" id="taskCount" aria-live="polite">0 tasks</span>
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="filter-buttons" role="tablist" aria-label="Task filters">
+                    <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">
+                        All Tasks
+                    </button>
+                    <button class="filter-btn" data-filter="pending" role="tab" aria-selected="false">
+                        Pending
+                    </button>
+                    <button class="filter-btn" data-filter="in-progress" role="tab" aria-selected="false">
+                        In Progress
+                    </button>
+                    <button class="filter-btn" data-filter="completed" role="tab" aria-selected="false">
+                        Completed
+                    </button>
+                </div>
+
+                <!-- Task List -->
+                <ul class="task-list" id="taskList" aria-live="polite" aria-label="Task list">
+                    <!-- Tasks will be dynamically inserted here -->
+                </ul>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <h3>No tasks yet!</h3>
+                    <p>Create your first task to get started with organizing your day.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        /**
+         * Task Manager Application
+         * A complete task management system with CRUD operations
+         */
+
+        class TaskManager {
+            constructor() {
+                this.tasks = [];
+                this.currentFilter = 'all';
+                this.taskIdCounter = 1;
+                this.init();
+            }
+
+            /**
+             * Initialize the application
+             */
+            init() {
+                this.loadTasksFromStorage();
+                this.bindEvents();
+                this.renderTasks();
+                this.updateTaskCount();
+            }
+
+            /**
+             * Load tasks from localStorage (or use in-memory storage for demo)
+             */
+            loadTasksFromStorage() {
+                try {
+                    // For deployment on Vercel, uncomment the following lines and comment the demo data
+                    // const savedTasks = localStorage.getItem('taskManagerTasks');
+                    // if (savedTasks) {
+                    //     this.tasks = JSON.parse(savedTasks);
+                    //     this.taskIdCounter = Math.max(...this.tasks.map(t => t.id), 0) + 1;
+                    // }
+
+                    // Demo data for Claude environment (remove for production)
+                    this.tasks = [
+                        {
+                            id: 1,
+                            title: "Complete project proposal",
+                            description: "Finalize the quarterly project proposal and submit to management",
+                            priority: "high",
+                            status: "pending",
+                            createdAt: new Date().toISOString()
+                        },
+                        {
+                            id: 2,
+                            title: "Team meeting preparation",
+                            description: "Prepare agenda and materials for tomorrow's team meeting",
+                            priority: "medium",
+                            status: "in-progress",
+                            createdAt: new Date().toISOString()
+                        }
+                    ];
+                    this.taskIdCounter = 3;
+                } catch (error) {
+                    console.error('Error loading tasks from storage:', error);
+                    this.tasks = [];
+                }
+            }
+
+            /**
+             * Save tasks to localStorage
+             */
+            saveTasksToStorage() {
+                try {
+                    // For deployment on Vercel, uncomment the following line
+                    // localStorage.setItem('taskManagerTasks', JSON.stringify(this.tasks));
+                } catch (error) {
+                    console.error('Error saving tasks to storage:', error);
+                }
+            }
+
+            /**
+             * Bind event listeners
+             */
+            bindEvents() {
+                // Form submission
+                const taskForm = document.getElementById('taskForm');
+                taskForm.addEventListener('submit', (e) => this.handleTaskSubmit(e));
+
+                // Filter buttons
+                const filterButtons = document.querySelectorAll('.filter-btn');
+                filterButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => this.handleFilterClick(e));
+                });
+
+                // Keyboard navigation for filters
+                const filterContainer = document.querySelector('.filter-buttons');
+                filterContainer.addEventListener('keydown', (e) => this.handleFilterKeydown(e));
+            }
+
+            /**
+             * Handle task form submission
+             */
+            handleTaskSubmit(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const title = formData.get('title').trim();
+                const description = formData.get('description').trim();
+                const priority = formData.get('priority');
+
+                // Validation
+                if (!title) {
+                    this.showError('Task title is required');
+                    return;
+                }
+
+                // Create new task
+                const newTask = {
+                    id: this.taskIdCounter++,
+                    title,
+                    description,
+                    priority,
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+
+                this.tasks.unshift(newTask);
+                this.saveTasksToStorage();
+                this.renderTasks();
+                this.updateTaskCount();
+                
+                // Reset form
+                e.target.reset();
+                document.getElementById('taskTitle').focus();
+                
+                this.showSuccess('Task created successfully!');
+            }
+
+            /**
+             * Handle filter button clicks
+             */
+            handleFilterClick(e) {
+                const filter = e.target.dataset.filter;
+                if (filter) {
+                    this.setActiveFilter(filter);
+                    this.currentFilter = filter;
+                    this.renderTasks();
+                }
+            }
+
+            /**
+             * Handle keyboard navigation for filter buttons
+             */
+            handleFilterKeydown(e) {
+                const buttons = Array.from(document.querySelectorAll('.filter-btn'));
+                const currentIndex = buttons.findIndex(btn => btn === document.activeElement);
+                
+                if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                    e.preventDefault();
+                    buttons[currentIndex - 1].focus();
+                } else if (e.key === 'ArrowRight' && currentIndex < buttons.length - 1) {
+                    e.preventDefault();
+                    buttons[currentIndex + 1].focus();
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.target.click();
+                }
+            }
+
+            /**
+             * Set active filter button
+             */
+            setActiveFilter(filter) {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-selected', 'false');
+                });
+                
+                const activeBtn = document.querySelector(`[data-filter="${filter}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                    activeBtn.setAttribute('aria-selected', 'true');
+                }
+            }
+
+            /**
+             * Delete a task
+             */
+            deleteTask(taskId) {
+                if (confirm('Are you sure you want to delete this task?')) {
+                    this.tasks = this.tasks.filter(task => task.id !== taskId);
+                    this.saveTasksToStorage();
+                    this.renderTasks();
+                    this.updateTaskCount();
+                    this.showSuccess('Task deleted successfully!');
+                }
+            }
+
+            /**
+             * Update task status
+             */
+            updateTaskStatus(taskId, newStatus) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.status = newStatus;
+                    task.updatedAt = new Date().toISOString();
+                    this.saveTasksToStorage();
+                    this.renderTasks();
+                    this.updateTaskCount();
+                }
+            }
+
+            /**
+             * Filter tasks based on current filter
+             */
+            getFilteredTasks() {
+                if (this.currentFilter === 'all') {
+                    return this.tasks;
+                }
+                return this.tasks.filter(task => task.status === this.currentFilter);
+            }
+
+            /**
+             * Render tasks in the UI
+             */
+            renderTasks() {
+                const taskList = document.getElementById('taskList');
+                const emptyState = document.getElementById('emptyState');
+                const filteredTasks = this.getFilteredTasks();
+
+                if (filteredTasks.length === 0) {
+                    taskList.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+
+                taskList.style.display = 'block';
+                emptyState.style.display = 'none';
+                
+                taskList.innerHTML = filteredTasks.map(task => this.createTaskHTML(task)).join('');
+
+                // Add event listeners to task action buttons
+                this.bindTaskEvents();
+            }
+
+            /**
+             * Create HTML for a single task
+             */
+            createTaskHTML(task) {
+                const priorityClass = `priority-${task.priority}`;
+                const priorityBadgeClass = `priority-${task.priority}-badge`;
+                const statusClass = `status-${task.status}`;
+                const completedClass = task.status === 'completed' ? 'completed' : '';
+
+                return `
+                    <li class="task-item ${priorityClass} ${completedClass}" data-task-id="${task.id}">
+                        <div class="task-header">
+                            <h3 class="task-title">${this.escapeHtml(task.title)}</h3>
+                            <span class="task-priority ${priorityBadgeClass}" aria-label="Priority: ${task.priority}">
+                                ${task.priority}
+                            </span>
+                        </div>
+                        
+                        ${task.description ? `<p class="task-description">${this.escapeHtml(task.description)}</p>` : ''}
+                        
+                        <div class="task-actions">
+                            <div class="task-status" role="group" aria-label="Task status options">
+                                <button class="status-btn status-pending ${task.status === 'pending' ? 'active' : ''}" 
+                                        data-status="pending" data-task-id="${task.id}" 
+                                        aria-label="Mark as pending"
+                                        ${task.status === 'pending' ? 'aria-pressed="true"' : 'aria-pressed="false"'}>
+                                    Pending
+                                </button>
+                                <button class="status-btn status-in-progress ${task.status === 'in-progress' ? 'active' : ''}" 
+                                        data-status="in-progress" data-task-id="${task.id}" 
+                                        aria-label="Mark as in progress"
+                                        ${task.status === 'in-progress' ? 'aria-pressed="true"' : 'aria-pressed="false"'}>
+                                    In Progress
+                                </button>
+                                <button class="status-btn status-completed ${task.status === 'completed' ? 'active' : ''}" 
+                                        data-status="completed" data-task-id="${task.id}" 
+                                        aria-label="Mark as completed"
+                                        ${task.status === 'completed' ? 'aria-pressed="true"' : 'aria-pressed="false"'}>
+                                    Completed
+                                </button>
+                            </div>
+                            <button class="delete-btn" data-task-id="${task.id}" aria-label="Delete task: ${this.escapeHtml(task.title)}">
+                                Delete
+                            </button>
+                        </div>
+                    </li>
+                `;
+            }
+
+            /**
+             * Bind events to task action buttons
+             */
+            bindTaskEvents() {
+                // Status buttons
+                document.querySelectorAll('.status-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const taskId = parseInt(e.target.dataset.taskId);
+                        const status = e.target.dataset.status;
+                        this.updateTaskStatus(taskId, status);
+                    });
+                });
+
+                // Delete buttons
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const taskId = parseInt(e.target.dataset.taskId);
+                        this.deleteTask(taskId);
+                    });
+                });
+            }
+
+            /**
+             * Update task count display
+             */
+            updateTaskCount() {
+                const taskCount = document.getElementById('taskCount');
+                const totalTasks = this.tasks.length;
+                const completedTasks = this.tasks.filter(t => t.status === 'completed').length;
+                
+                taskCount.textContent = this.currentFilter === 'all' 
+                    ? `${totalTasks} ${totalTasks === 1 ? 'task' : 'tasks'}`
+                    : `${this.getFilteredTasks().length} ${this.currentFilter} ${this.getFilteredTasks().length === 1 ? 'task' : 'tasks'}`;
+            }
+
+            /**
+             * Escape HTML to prevent XSS attacks
+             */
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            /**
+             * Show success message
+             */
+            showSuccess(message) {
+                this.showNotification(message, 'success');
+            }
+
+            /**
+             * Show error message
+             */
+            showError(message) {
+                this.showNotification(message, 'error');
+            }
+
+            /**
+             * Show notification (simple implementation)
+             */
+            showNotification(message, type = 'info') {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 25px;
+                    background: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db'};
+                    color: white;
+                    border-radius: 5px;
+                    font-weight: 600;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                `;
+
+                document.body.appendChild(notification);
+
+                // Remove notification after 3 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new TaskManager();
+        });
+
+        // Add slideOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
